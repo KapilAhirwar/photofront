@@ -11,6 +11,7 @@ export default function PhotoConverter() {
   const [dpi, setDpi] = useState(72);
   const [result, setResult] = useState(null);
   const [targetSizeKB, setTargetSizeKB] = useState('');
+  const [loading, setLoading] = useState(false); // 👈 loading state
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -33,12 +34,15 @@ export default function PhotoConverter() {
     formData.append("dpi", dpi);
     formData.append("targetSizeKB", targetSizeKB);
 
+    setLoading(true); // 👈 start loading
     try {
       const res = await axios.post("https://photoback-8ul9.onrender.com/convert", formData);
       setResult(res.data);
     } catch (err) {
       alert("Error converting image");
       console.error(err);
+    } finally {
+      setLoading(false); // 👈 stop loading
     }
   };
 
@@ -59,6 +63,7 @@ export default function PhotoConverter() {
         {/* File Input */}
         <div className="flex flex-col gap-4 mb-6">
           <input type="file" accept="image/*" onChange={handleImageChange} className="mt-2" />
+
           <div className="flex justify-center gap-7">
             {/* Format */}
             <div className="flex gap-2 items-center">
@@ -80,7 +85,7 @@ export default function PhotoConverter() {
                 className="border p-1 w-24"
               />
             </div>
-          </div>  
+          </div>
 
           {/* Width, Height, Unit */}
           <div className="flex gap-2 items-center">
@@ -101,8 +106,15 @@ export default function PhotoConverter() {
             <input type="number" value={dpi} onChange={(e) => setDpi(e.target.value)} className="border p-1 w-24" />
           </div>
         </div>
+
         {/* Submit Button */}
-        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded w-full mt-8">Convert</button>
+        <button
+          type="submit"
+          className="bg-blue-600 text-white px-4 py-2 rounded w-full mt-8 disabled:opacity-50"
+          disabled={loading}
+        >
+          {loading ? "Converting..." : "Convert"}
+        </button>
       </form>
 
       {/* Result Preview */}
